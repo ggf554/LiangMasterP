@@ -60,7 +60,7 @@ public class Gui extends JFrame implements MouseListener,MouseMotionListener,Act
 	@Override
 	public void mousePressed(MouseEvent e) {
 		// TODO Auto-generated method stub
-		startX=e.getX();
+		startX=e.getX();   
 		startY=e.getY();
 		System.out.println(startX + "@@");
 	}
