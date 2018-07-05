@@ -16,7 +16,10 @@ public class Gui extends JFrame implements MouseListener,MouseMotionListener,Act
 	
 	JPanel p1;
 	
-	Component c;
+
+	Component c = new Component();
+	
+	
 	public Gui() {
 		p1 = new JPanel();
 		
@@ -28,6 +31,8 @@ public class Gui extends JFrame implements MouseListener,MouseMotionListener,Act
 		this.setLocation(200, 100);
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		g = this.getGraphics();
+		
+		
 	}
 
 	
@@ -42,12 +47,17 @@ public class Gui extends JFrame implements MouseListener,MouseMotionListener,Act
 	@Override
 	public void mouseDragged(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
+	
+		c.setX(e.getX());
+		c.setY(e.getY());
+		repaint();
 	}
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
 		// TODO Auto-generated method stub
+		
+		
 		
 	}
 
@@ -62,7 +72,7 @@ public class Gui extends JFrame implements MouseListener,MouseMotionListener,Act
 		// TODO Auto-generated method stub
 		startX=e.getX();   
 		startY=e.getY();
-		System.out.println(startX + "@@");
+		
 	}
 
 	@Override
@@ -70,11 +80,26 @@ public class Gui extends JFrame implements MouseListener,MouseMotionListener,Act
 		// TODO Auto-generated method stub
 		endX=e.getX();
 		endY=e.getY();
-		System.out.println(startX +" "+ startY +" "+ (endX-startX) +" "+ (endY-startY));
 		
-		c = new Component(startX,startY,(endX-startX),(endY-startY));
+		c.setX(startX);
+		c.setY(startY);
+		if(endX>startX) {
+			c.setWidth(endX-startX);
+		}else {
+			c.setX(endX);
+			c.setWidth(startX-endX);
+		}
+		
+		if(endY>startY) {
+			c.setHight(endY-startY);
+		}else {
+			c.setY(endY);
+			c.setHight(startY-endY);
+		}
 		
 		c.paintComponent(g);
+		
+		
 		
 	}
 
