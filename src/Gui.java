@@ -107,12 +107,15 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 		Graphics2D g2d = (Graphics2D) g;
 		Pointer p1,p2;
 		int n = wireInfo.size();
-		for(int i=0; i<n; i++) {
+		for(int i=0; i<n-1; i++) {
+			
 			p1 = (Pointer) wireInfo.elementAt(i);
 			p2 = (Pointer) wireInfo.elementAt(i+1);
-			System.out.println("!!"+p1.x);
-			Line2D line2 = new Line2D.Double(p1.x, p1.y, p2.x, p2.y);
-			g2d.draw(line2);
+			if(p1.nb != (-1)&&p2.nb !=(-1)) {
+				System.out.println("!!"+p1.x);
+				Line2D line2 = new Line2D.Double(p1.x, p1.y, p2.x, p2.y);
+				g2d.draw(line2);
+			}
 		}
 		
 	}
@@ -228,18 +231,26 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 	public void mouseClicked(MouseEvent e) {
 		// TODO Auto-generated method stub
 
+		if(e.getButton() == e.BUTTON3) {
+			 wireInfo.addElement(endFlag);
+		}
+		
 	}
 
 	int x,y;
 	@Override
 	public void mousePressed(MouseEvent e) {
 		// TODO Auto-generated method stub
+		if(e.getButton() == e.BUTTON3) {
+			 wireInfo.addElement(endFlag);
+		} else {
 		Pointer p2;
 		x = (int) e.getX();
 		y = (int) e.getY();
 		p2 = new Pointer(x, y, 1);
 		wireInfo.addElement(p2);
 	
+		}
 		
 		if (!mouseIn(e.getX(), e.getY())) {
 			startX = e.getX();
