@@ -116,7 +116,7 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 		}
 		
 	}
-	
+	 
 	public void update(Graphics g) {
 		paint(g);
 	}
