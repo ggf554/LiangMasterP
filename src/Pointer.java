@@ -9,11 +9,11 @@ import java.io.Serializable;
 
 public class Pointer implements Serializable {
 	int x, y;// x and y coordinate
-	int nb;//different kinds of component
+	int toolFlag;//different kinds of component
  
-	public Pointer(int x, int y, int nb) {
+	public Pointer(int x, int y, int tool) {
 		this.x = x;
 		this.y = y;
-		this.nb = nb;
+		this.toolFlag = tool;
 	}
 }
