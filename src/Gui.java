@@ -57,7 +57,7 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 
 	Component c = new Component();
 
-	public Gui() {
+	public Gui() {  
 		super();
 
 		wireInfo = new Vector();
