@@ -1,5 +1,6 @@
 import java.awt.BorderLayout;
 import java.awt.Button;
+import java.awt.Choice;
 import java.awt.FileDialog;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -8,6 +9,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -27,7 +30,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-public class Gui extends JFrame implements MouseListener, MouseMotionListener, ActionListener {
+public class Gui extends JFrame implements MouseListener, MouseMotionListener, ActionListener, ItemListener {
 
 	Graphics g;
 
@@ -38,6 +41,7 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 	Vector wireInfo = null;// set of vector information for wires
 	Pointer endFlag = new Pointer(-1, -1, -1);
 
+	Choice comChoice;
 	FileInputStream picIn = null;
 	FileOutputStream picOut = null;
 	ObjectInputStream OIn = null;
@@ -60,6 +64,11 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 
 		toolPanel = new JPanel();
 
+		comChoice = new Choice();
+		comChoice.add("or gate");
+		comChoice.add("and gate");
+		comChoice.addItemListener(this);
+		
 		select = new JButton("Select");
 		clean = new JButton("Clean");
 		drLine = new JButton("Wire");
@@ -101,6 +110,7 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 		toolPanel.add(clean);
 		toolPanel.add(drLine);
 		toolPanel.add(drRect);
+		toolPanel.add(comChoice);
 
 		this.add(toolPanel, BorderLayout.NORTH);
 
@@ -371,6 +381,12 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 	public void mouseExited(MouseEvent e) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void itemStateChanged(ItemEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
