@@ -1,23 +1,18 @@
 import java.awt.Graphics;
 
-public class Component {
+public class orGateComponent {
 
 	private String descruption;
 	private int startX, startY, width, hight;
 
-	public Component() {
-		startX = 0;
-		startY = 0;
-		width = 0;
-		hight = 0;
+	public orGateComponent() {
+		startX = 200;
+		startY = 200;
+		width = 30;
+		hight = 30;
 	}
 
-	public Component(int sx, int sy, int w, int h) {
-		startX = sx;
-		startY = sy;
-		width = w;
-		hight = h;
-	}
+
 
 	public void paintComponent(Graphics graphics) {
 
@@ -30,16 +25,7 @@ public class Component {
 		}
 	}
 
-	public void cleanComponent(Graphics graphics) {
-
-		try {
-
-			graphics.clearRect(startX, startY, width, hight);
-
-		} catch (Exception e) {
-
-		}
-	}
+	
 
 	public void setX(int x) {
 		startX = x;
