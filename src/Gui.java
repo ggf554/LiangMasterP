@@ -35,14 +35,14 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 
 	Graphics g;
 
-	int count =0;
+	int count = 0;
 	int startX, endX, startY, endY;
 	int toolFlag = 0; // the tool flag
 	// (-1 -- endflag); (0 -- select); (1 -- line)
 	// (2 -- clean up); (3 -- component)
 
-	Color red = new Color(255,0,0);
-	
+	Color red = new Color(255, 0, 0);
+	boolean mouseOver = false;
 	int comFlag = 0; // the component flag
 	// (0 -- not selected); (1 -- or gate); (2 -- and gate)
 
@@ -64,12 +64,11 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 	FileDialog openPicture, savePicture;
 
 	orGateComponent orGate = new orGateComponent();
-
+	Line l;
 	Pointer pointer1, pointer2;
 	int moveIndex;
 
 	public Gui() {
-		super();
 
 		wireInfo = new Vector();
 
@@ -139,6 +138,7 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 	}
 
 	public void paint(Graphics g) {
+
 		Graphics2D g2d = (Graphics2D) g;
 		Pointer p1, p2;
 		int n = wireInfo.size();
@@ -153,21 +153,43 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 
 				switch (p1.toolFlag) {
 				case 0:
+
 					break;
 				case 1:// line
+
+					if (selectedBlock && moveIndex == i) {
+
+						g2d.setColor(red);
+					} else if (mouseOver && toolFlag == 0 && moveIndex == i) {
+						g2d.setColor(new Color(0, 0, 255));
+					} else {
+						g2d.setColor(new Color(0, 0, 0));
+					}
+
 					Line2D line2 = new Line2D.Double(p1.x, p1.y, p2.x, p2.y);
 					g2d.draw(line2);
+
+					g2d.setColor(new Color(0, 0, 0));
 					break;
 				case 3:// rectangle
-					if(selectedBlock && moveIndex == i) {
-						
+					if (selectedBlock && moveIndex == i) {
+
 						g2d.setColor(red);
+					} else if (mouseOver && toolFlag == 0 && moveIndex == i) {
+						g2d.setColor(new Color(0, 0, 255));
 					} else {
-						g2d.setColor(new Color(0,0,0));
+
+						g2d.setColor(new Color(0, 0, 0));
 					}
+
 					Rectangle2D rect = new Rectangle2D.Double(p1.x, p1.y, Math.abs(p2.x - p1.x), Math.abs(p2.y - p1.y));
 					g2d.draw(rect);
-					g2d.setColor(new Color(0,0,0));
+					if (p1.componentFlag == 1) {
+						g2d.drawString("Or Gate", p1.x + 25, p1.y + 50);
+					} else if (p1.componentFlag == 2) {
+						g2d.drawString("And Gate", p1.x + 25, p1.y + 50);
+					}
+					g2d.setColor(new Color(0, 0, 0));
 					break;
 				case (-1):
 					i = i + 1;
@@ -176,6 +198,29 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 				}
 			}
 		}
+
+	}
+
+	/**
+	 * 
+	 * @param x
+	 *            mouse location
+	 * @param y
+	 *            mouse location
+	 * @param li
+	 *            the line
+	 * @return the distance between mouse and the line
+	 */
+	public double distence(double x, double y, Line li) {
+		return Math.abs(li.A * x + li.B * y + li.C) / Math.sqrt(li.A * li.A + li.B * li.B);
+	}
+
+	public Line equation(int x1, int y1, int x2, int y2) {
+		double a, b, c;
+		a = y2 - y1;
+		b = x1 - x2;
+		c = x2 * y1 - x1 * y2;
+		return l = new Line(a, b, c);
 
 	}
 
@@ -195,15 +240,16 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 				case 0:
 					break;
 				case 1:// line
-					// Line2D line2 = new Line2D.Double(p1.x, p1.y, p2.x, p2.y);
-					// if (x >= c.getX() && x <= c.getX() + c.getWidth() && y >= c.getY() && y <=
-					// c.getY() + c.getHight()) {
-					//
-					// return true;
-					//
-					// }
+					double dis;
+					dis = distence(x, y, equation(pointer1.x, pointer1.y, pointer2.x, pointer2.y));
+
+					if (dis < 3) {
+						moveIndex = i;
+
+						return true;
+					}
 					break;
-				case 3:// rectangle
+				case 3:// component
 					if (x >= pointer1.x && x <= pointer2.x && y >= pointer1.y && y <= pointer2.y) {
 						moveIndex = i;
 						return true;
@@ -325,7 +371,7 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 
 	}
 
-	int dragx, dragy;
+	int dragx1, dragy1, dragx2, dragy2;
 	boolean first = true;
 	boolean selectedBlock = false;
 
@@ -340,51 +386,83 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 		// wireInfo.addElement(p1);
 		// System.out.println(wireInfo);
 		//
-		
-			
 
-			if (selectedBlock) {
-
-				Pointer p3 = new Pointer(e.getX() - dragx, e.getY() - dragy, pointer1.toolFlag, pointer1.componentFlag);
-				Pointer p4 = new Pointer(e.getX() + 100 - dragx, e.getY() + 100 - dragy, pointer2.toolFlag,
+		if (selectedBlock) {
+			if (pointer1.toolFlag == 1) {
+				Pointer p3 = new Pointer(e.getX() - dragx1, e.getY() - dragy1, pointer1.toolFlag,
+						pointer1.componentFlag);
+				Pointer p4 = new Pointer(e.getX() - dragx2, e.getY() - dragy2, pointer2.toolFlag,
 						pointer2.componentFlag);
 				wireInfo.set(moveIndex, p3);
 				wireInfo.set(moveIndex + 1, p4);
 
 				update(g);
-
 			}
-			
+			if (pointer1.toolFlag == 3) {
+				Pointer p3 = new Pointer(e.getX() - dragx1, e.getY() - dragy1, pointer1.toolFlag,
+						pointer1.componentFlag);
+				Pointer p4 = new Pointer(e.getX() - dragx2, e.getY() - dragy2, pointer2.toolFlag,
+						pointer2.componentFlag);
+				wireInfo.set(moveIndex, p3);
+				wireInfo.set(moveIndex + 1, p4);
+
+				update(g);
+			}
+		}
 
 	}
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
 		// TODO Auto-generated method stub
+
+		if (mouseIn(e.getX(), e.getY())) {
+
+			mouseOver = true;
+			update(g);
+		} else {
+			mouseOver = false;
+			update(g);
+
+		}
+
 	}
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		// TODO Auto-generated method stub
-		if(toolFlag == 0) {
-			
-			
-			if (mouseIn(e.getX(), e.getY())) {
-				
+		if (toolFlag == 0) {
 
-					dragx = e.getX() - pointer1.x;
-					dragy = e.getY() - pointer1.y;
-				
+			if (mouseIn(e.getX(), e.getY())) {
+				if (pointer1.toolFlag == 1) {
+					dragx1 = e.getX() - pointer1.x;
+					dragy1 = e.getY() - pointer1.y;
+					dragx2 = e.getX() - pointer2.x;
+					dragy2 = e.getY() - pointer2.y;
+
 					selectedBlock = true;
 					toolFlag = (-1);
-					count =0;
+					count = 0;
 					update(g);
-				System.out.println("the component has been selected");
+					System.out.println("The wire has been selected");
+				}
+
+				if (pointer1.toolFlag == 3) {
+
+					dragx1 = e.getX() - pointer1.x;
+					dragy1 = e.getY() - pointer1.y;
+					dragx2 = e.getX() - pointer2.x;
+					dragy2 = e.getY() - pointer2.y;
+
+					selectedBlock = true;
+					toolFlag = (-1);
+					count = 0;
+					update(g);
+					System.out.println("the component has been selected");
+				}
 			}
-			
-			
-		
-		} 
+
+		}
 	}
 
 	int x, y;
@@ -413,9 +491,8 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 	public void mouseReleased(MouseEvent e) {
 		// TODO Auto-generated method stub
 
-		
-		count++;//select and move component count
-		
+		count++;// select and move component count
+
 		Pointer p3;
 
 		switch (toolFlag) {
@@ -433,44 +510,14 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 
 		default:
 		}
-		
-		if(count < 1) {
-			
-		}else {
+
+		if (count < 1) {
+
+		} else {
 			selectedBlock = false;
-			count =0;
+			count = 0;
 		}
 		update(g);
-
-		// x = (int) e.getX();
-		// y = (int) e.getY();
-		// p3 = new Pointer(x, y, 1);
-		// wireInfo.addElement(p3);
-		//
-		// repaint();
-		//
-		// if (!mouseIn(e.getX(), e.getY())) {
-		// endX = e.getX();
-		// endY = e.getY();
-		//
-		// c.setX(startX);
-		// c.setY(startY);
-		// if (endX > startX) {
-		// c.setWidth(endX - startX);
-		// } else {
-		// c.setX(endX);
-		// c.setWidth(startX - endX);
-		// }
-		//
-		// if (endY > startY) {
-		// c.setHight(endY - startY);
-		// } else {
-		// c.setY(endY);
-		// c.setHight(startY - endY);
-		// }
-		//
-		// c.paintComponent(g);
-		// }
 
 	}
 
