@@ -25,6 +25,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.JButton;
@@ -66,7 +68,7 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 	FileDialog openPicture, savePicture;
 
 	orGateComponent orGate = new orGateComponent();
-	Line l;
+	Line line;
 	Pointer pointer1, pointer2;
 	int moveIndex;
 
@@ -251,7 +253,7 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 		a = y2 - y1;
 		b = x1 - x2;
 		c = x2 * y1 - x1 * y2;
-		return l = new Line(a, b, c);
+		return line = new Line(a, b, c);
 
 	}
 
@@ -539,6 +541,14 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 						pointer1.componentFlag);
 				Pointer p4 = new Pointer(e.getX() - dragx2, e.getY() - dragy2, pointer2.toolFlag,
 						pointer2.componentFlag);
+				
+			
+//				for(int i=0; i<line.comLineMove(wireInfo, moveIndex).size()-1;i++){
+//					wireInfo.set(line.lineInd.get(i), line.comLineMove(wireInfo, moveIndex).get(i));
+//				}
+				
+			
+				
 				wireInfo.set(moveIndex, p3);
 				wireInfo.set(moveIndex + 1, p4);
 
