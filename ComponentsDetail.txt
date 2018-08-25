@@ -1,0 +1,6 @@
+OrGate 2 1
+AndGate 2 1
+DffGate 1 1 
+TestGate 3 5
+Test2 1 3
+ssss 0 0
