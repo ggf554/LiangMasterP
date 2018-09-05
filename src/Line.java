@@ -68,6 +68,8 @@ public class Line {
 		return false;
 	}
 	
+
+	
 	/**
 	 * 
 	 * @param p1  component start pointer

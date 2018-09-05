@@ -18,4 +18,12 @@ public class Pointer implements Serializable {
 		this.toolFlag = tool;
 		this.componentFlag = component;
 	}
+	public Pointer(Pointer p) {
+		// TODO Auto-generated constructor stub
+		this.x = p.x;
+		this.y = p.y;
+		this.toolFlag = p.toolFlag;
+		this.componentFlag = p.componentFlag;
+		
+	}
 }

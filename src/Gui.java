@@ -55,7 +55,7 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 	int comFlag = -1; // the component flag
 	// (-1 -- not selected);
 	ArrayList<Pointer> wireInfo = null;// set of vector information for wires
-	Pointer endFlag = new Pointer(-1, -1, -1, -1);
+	Pointer endFlag = new Pointer(-10, -10, -1, -1);
 
 	Choice comChoice;
 	FileInputStream picIn = null;
@@ -66,7 +66,7 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 	JPanel p1;
 	JPanel toolPanel;
 
-	Button drLine, drRect, clean, select, design , delete;
+	Button drLine, drRect, clean, select, design, delete;
 
 	Button openPic, savePic; // save or load the picture
 	FileDialog openPicture, savePicture;
@@ -76,7 +76,8 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 	Line line;
 	Pointer pointer1, pointer2;
 	int moveIndex;
-
+	boolean onLineCross = false;
+	
 	public void loadComponents() {
 		try {
 			String pathname = "ComponentsDetail.txt";
@@ -191,25 +192,23 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 		for (int i = 0; i < n - 2; i++) {
 			p1 = (Pointer) wireInfo.get(i);
 			p2 = (Pointer) wireInfo.get(i + 1);
-		
-			//draw the dot
-			if(p1.toolFlag == 4) {
-				
-					
-					if (selectedDot && moveIndex == i) {
-						g2d.setColor(red);
-					}else if (mouseOver && toolFlag == 0 && moveIndex == i) {
-						g2d.setColor(new Color(0, 0, 255));
-					} else {
-						g2d.setColor(new Color(0, 0, 0));
-					}
-					
-					g2d.fillOval(p1.x - 3, p1.y - 3, 6, 6);
+
+			// draw the dot
+			if (p1.toolFlag == 4) {
+
+				if (selectedDot && moveIndex == i) {
+					g2d.setColor(red);
+				} else if (mouseOver && toolFlag == 0 && moveIndex == i) {
+					g2d.setColor(new Color(0, 0, 255));
+				} else {
 					g2d.setColor(new Color(0, 0, 0));
-				
+				}
+
+				g2d.fillOval(p1.x - 3, p1.y - 3, 6, 6);
+				g2d.setColor(new Color(0, 0, 0));
+
 			}
-			
-			
+
 			if (p1.toolFlag == p2.toolFlag) {
 
 				switch (p1.toolFlag) {
@@ -218,12 +217,10 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 					break;
 				case 1:// line
 
-					
-
 					if (selectedBlock && moveIndex == i) {
 
 						g2d.setColor(red);
-						
+
 					} else if (mouseOver && toolFlag == 0 && moveIndex == i) {
 						g2d.setColor(new Color(0, 0, 255));
 					} else {
@@ -254,7 +251,7 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 					}
 					linePortColor(p1, p2, g2d);
 					break;
-				
+
 				case (-1):
 					i = i + 1;
 					break;
@@ -329,6 +326,20 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 	}
 
 	/**
+	 * get the input to round 10
+	 * @param x
+	 * @return
+	 */
+	public int locationRound(int x) {
+		double x1= x;
+		
+		x1 = x1/50;
+		Math.round(x1);
+		int x2 = (int) (x1 * 50);
+		return x2;
+	}
+	
+	/**
 	 * check if the mouse in the componentPort
 	 * 
 	 * @param p1
@@ -400,25 +411,36 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 		paint(g);
 	}
 
+	/**
+	 * before the selection, check is the mouse near any target
+	 * 
+	 * @param x
+	 *            mouse X
+	 * @param y
+	 *            mouse Y
+	 * @return true, if mouse near any thing
+	 */
 	public boolean mouseIn(int x, int y) {
 
 		int n = wireInfo.size();
-
-		if(selectedBlock||selectedDot) {
+		onLineCross = false;
+		if (selectedBlock) {
 			
-		}else if (n != 0) {
+		} else if (n != 0) {
 			for (int i = 0; i < n - 2; i++) {
 				pointer1 = (Pointer) wireInfo.get(i);
 				pointer2 = (Pointer) wireInfo.get(i + 1);
 				if (toolFlag != 1) { // select mode
-					
-					if(pointer1.toolFlag == 4) {//dot
+
+					if (pointer1.toolFlag == 4) {// dot
 						if (Math.abs(pointer1.x - x) <= 6 && Math.abs(pointer1.y - y) <= 6) {
-									moveIndex = i;
-									
-									return true;
-								}
-					}else if (pointer1.toolFlag == pointer2.toolFlag) {
+							moveIndex = i;
+							if(selectedDot) {
+								return false;
+							}
+							return true;
+						}
+					} else if (pointer1.toolFlag == pointer2.toolFlag) {
 						switch (pointer1.toolFlag) {
 						case 0:
 							break;
@@ -426,22 +448,21 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 
 							double dis;
 
-							
+							dis = distence(x, y, equation(pointer1.x, pointer1.y, pointer2.x, pointer2.y));
 
-								dis = distence(x, y, equation(pointer1.x, pointer1.y, pointer2.x, pointer2.y));
+							if (dis < 3) {
+								if (Math.abs(pointer1.x - x) <= 6 && Math.abs(pointer1.y - y) <= 6) {
 
-								if (dis < 3) {
-									if(Math.abs(pointer1.x - x) <= 6 && Math.abs(pointer1.y - y) <= 6) {
-										
-									}else if(Math.abs(pointer2.x - x) <= 6 && Math.abs(pointer2.y - y) <= 6){
-									
-									}else {
+								} else if (Math.abs(pointer2.x - x) <= 6 && Math.abs(pointer2.y - y) <= 6) {
+
+								} else {
 									moveIndex = i;
-
+									onLineCross = true;
+								
 									return true;
-									}
 								}
-							
+							}
+
 							break;
 
 						case 3:// component
@@ -458,6 +479,24 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 					}
 				} else if (toolFlag == 1) { // Line mode
 
+					if (pointer1.toolFlag == pointer2.toolFlag && pointer1.toolFlag == 1) {
+
+						double dis;
+
+						dis = distence(x, y, equation(pointer1.x, pointer1.y, pointer2.x, pointer2.y));
+
+						if (dis < 3) {
+							
+								moveIndex = i;
+								
+							
+								return true;
+							
+						}
+						
+					}
+
+					
 					if (pointer1.toolFlag == pointer2.toolFlag && pointer1.toolFlag == 3) {
 
 						if (inComponentPort(pointer1, pointer2, x, y)) {
@@ -501,37 +540,38 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 			toolFlag = 0;
 			selectedBlock = false;
 			selectedDot = false;
+			onLineCross = false;
 		}
-		
-		if(e.getSource() == delete) {
+
+		if (e.getSource() == delete) {
 			System.out.println("delete");
 			toolFlag = 5;
-			
-			if(selectedBlock) {
+
+			if (selectedBlock) {
 				selectedBlock = false;
-				if(pointer1.toolFlag == 3) {
-					
-						wireInfo.remove(moveIndex);
-						wireInfo.remove(moveIndex);
-						System.out.println("The component has been deleted");
-					
-				}else if(pointer1.toolFlag == 1) {
-					
-						wireInfo.remove(moveIndex);
-						wireInfo.remove(moveIndex-1);
-						System.out.println("The wire has been deleted");
-					
+				if (pointer1.toolFlag == 3) {
+
+					wireInfo.remove(moveIndex);
+					wireInfo.remove(moveIndex);
+					System.out.println("The component has been deleted");
+
+				} else if (pointer1.toolFlag == 1) {
+
+					wireInfo.remove(moveIndex);
+					wireInfo.remove(moveIndex - 1);
+					System.out.println("The wire has been deleted");
+
 				}
 			}
-			
-			if(selectedDot) {
+
+			if (selectedDot) {
 				selectedDot = false;
 				wireInfo.remove(moveIndex);
-				wireInfo.remove(moveIndex-1);
-				wireInfo.remove(moveIndex-1);
+				wireInfo.remove(moveIndex - 1);
+				wireInfo.remove(moveIndex - 1);
 				System.out.println("The dot has been deleted");
 			}
-			
+
 			update(g);
 		}
 
@@ -622,30 +662,44 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 	boolean first = true;
 	boolean selectedBlock = false;
 	boolean newNodeAdded = false;
-
+	Pointer pp = null;
+	int temIndex;
 	@Override
 	public void mouseDragged(MouseEvent e) {
 		// TODO Auto-generated method stub
 
+		
+		
+		
 		if (selectedDot) {
-			if (pointer1.toolFlag ==4 ) {
-				Pointer po1 = new Pointer(e.getX(), e.getY(), 1, pointer1.componentFlag);
-				Pointer po2 = new Pointer(e.getX(), e.getY(), pointer1.toolFlag, pointer1.componentFlag);
-				Pointer po3 = new Pointer(e.getX(), e.getY(), 1, pointer1.componentFlag);
-				
-				wireInfo.set(moveIndex -1, po1);
-				wireInfo.set(moveIndex, po2);
-				wireInfo.set(moveIndex +1, po3);
+			if(first) {
+				first = false;
+				pp = new Pointer(pointer1);
+				temIndex = moveIndex;
+			}
+			
+			mouseIn(locationRound(e.getX()),locationRound(e.getY()));
+			if (pp.toolFlag == 4) {
+
+				Pointer po1 = new Pointer(locationRound(e.getX()), locationRound(e.getY()), 1, pp.componentFlag);
+				Pointer po2 = new Pointer(locationRound(e.getX()), locationRound(e.getY()), 4, pp.componentFlag);
+				Pointer po3 = new Pointer(locationRound(e.getX()), locationRound(e.getY()), 1, pp.componentFlag);
+
+				wireInfo.set(temIndex - 1, po1);
+				wireInfo.set(temIndex, po2);
+				wireInfo.set(temIndex + 1, po3);
+
 				
 				update(g);
-				
+
 			}
 		}
-		
+
 		if (selectedBlock) {
 			if (pointer1.toolFlag == 1) {
+				
 
-				Pointer po3 = new Pointer(e.getX(), e.getY(), pointer1.toolFlag, pointer1.componentFlag);
+				Pointer po3 = new Pointer(locationRound(e.getX()), locationRound(e.getY()), pointer1.toolFlag, pointer1.componentFlag);
 				if (!newNodeAdded) {
 					wireInfo.add(moveIndex + 1, po3);
 					newNodeAdded = true;
@@ -658,9 +712,9 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 
 			// selected a component, move it to new location
 			if (pointer1.toolFlag == 3) {
-				Pointer p3 = new Pointer(e.getX() - dragx1 + pointer1.x, e.getY() - dragy1 + pointer1.y,
+				Pointer p3 = new Pointer(locationRound(e.getX() - dragx1 + pointer1.x), locationRound(e.getY() - dragy1 + pointer1.y),
 						pointer1.toolFlag, pointer1.componentFlag);
-				Pointer p4 = new Pointer(e.getX() - dragx1 + pointer2.x, e.getY() - dragy1 + pointer2.y,
+				Pointer p4 = new Pointer(locationRound(e.getX() - dragx1 + pointer2.x),locationRound( e.getY() - dragy1 + pointer2.y),
 						pointer2.toolFlag, pointer2.componentFlag);
 
 				// wire fellow with component move
@@ -668,8 +722,8 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 					if (wireInfo.get(i).toolFlag == 1) {
 						if (line.lineInComponent(wireInfo.get(moveIndex), wireInfo.get(moveIndex + 1),
 								wireInfo.get(i))) {
-							Pointer lineP = new Pointer(e.getX() - dragx1 + mycopy.get(i).x,
-									e.getY() - dragy1 + mycopy.get(i).y, wireInfo.get(i).toolFlag,
+							Pointer lineP = new Pointer(locationRound(e.getX() - dragx1 + mycopy.get(i).x),
+									locationRound(e.getY() - dragy1 + mycopy.get(i).y), wireInfo.get(i).toolFlag,
 									wireInfo.get(i).componentFlag);
 
 							wireInfo.set(i, lineP);
@@ -691,7 +745,7 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 	public void mouseMoved(MouseEvent e) {
 		// TODO Auto-generated method stub
 
-		if (mouseIn(e.getX(), e.getY())) {
+		if (mouseIn(locationRound(e.getX()), locationRound(e.getY()))) {
 
 			mouseOver = true;
 			update(g);
@@ -708,25 +762,24 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 		// TODO Auto-generated method stub
 		if (toolFlag == 0) {
 
-			if (mouseIn(e.getX(), e.getY())) {
+			if (mouseIn(locationRound(e.getX()), locationRound(e.getY()))) {
+				dragx1 = locationRound(e.getX());
+				dragy1 = locationRound(e.getY());
+
 				if (pointer1.toolFlag == 1) {
 
-					 
-						dragx1 = e.getX();
-						dragy1 = e.getY();
-
-						selectedBlock = true;
-						toolFlag = (-1);
-						count = 0;
-						update(g);
-						System.out.println("The wire has been selected");
 					
+					selectedBlock = true;
+					toolFlag = (-1);
+					count = 0;
+					update(g);
+					System.out.println("The wire has been selected");
+
 				}
 
 				if (pointer1.toolFlag == 3) {
 
-					dragx1 = e.getX();
-					dragy1 = e.getY();
+					
 
 					mycopy = new ArrayList<Pointer>();
 
@@ -738,20 +791,17 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 					update(g);
 					System.out.println("the component has been selected");
 				}
+
+				if (pointer1.toolFlag == 4) {
+
 				
-				if(pointer1.toolFlag == 4) {
-					
-						dragx1 = e.getX();
-						dragy1 = e.getY();
 
-						selectedDot = true;
-						toolFlag = (-1);
-						count = 0;
-						update(g);
-						System.out.println("The dot has been selected");
+					selectedDot = true;
+					toolFlag = (-1);
+					count = 0;
+					update(g);
+					System.out.println("The dot has been selected");
 
-					
-						
 				}
 			}
 
@@ -768,8 +818,8 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 		switch (toolFlag) {
 		case 1:// line
 
-			x = (int) e.getX();
-			y = (int) e.getY();
+			x = (int) locationRound(e.getX());
+			y = (int) locationRound(e.getY());
 			if (mouseIn(x, y)) {
 
 				p2 = new Pointer(x, y, toolFlag, comFlag);
@@ -792,24 +842,34 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 		count++;// select and move component count
 
 		Pointer p3;
+		
+		if(onLineCross && selectedDot) {
+			Pointer po1 = new Pointer(locationRound(e.getX()), locationRound(e.getY()), 1, pp.componentFlag);
+			Pointer po2 = new Pointer(locationRound(e.getX()), locationRound(e.getY()), 4, pp.componentFlag);
+			Pointer po3 = new Pointer(locationRound(e.getX()), locationRound(e.getY()), 1, pp.componentFlag);
+			wireInfo.add(moveIndex + 1, po1);
+			wireInfo.add(moveIndex + 1, po2);
+			wireInfo.add(moveIndex + 1, po3);
+		}
 
-		if(newNodeAdded) {
-			//Pointer po1 = new Pointer(e.getX(), e.getY(), pointer1.toolFlag, pointer1.componentFlag);
-			Pointer po2 = new Pointer(e.getX(), e.getY(), 4, pointer1.componentFlag);
-			Pointer po3 = new Pointer(e.getX(), e.getY(), pointer1.toolFlag, pointer1.componentFlag);
+		if (newNodeAdded) {
+			// Pointer po1 = new Pointer(e.getX(), e.getY(), pointer1.toolFlag,
+			// pointer1.componentFlag);
+			Pointer po2 = new Pointer(locationRound(e.getX()), locationRound(e.getY()), 4, pointer1.componentFlag);
+			Pointer po3 = new Pointer(locationRound(e.getX()), locationRound(e.getY()), pointer1.toolFlag, pointer1.componentFlag);
 			wireInfo.add(moveIndex + 1, po2);
 			wireInfo.add(moveIndex + 1, po3);
 		}
 		newNodeAdded = false;
-		
+
 		switch (toolFlag) {
 		case 0:// select
 			wireInfo.add(endFlag);
 			break;
 		case 1:
 
-			x = (int) e.getX();
-			y = (int) e.getY();
+			x = (int) locationRound(e.getX());
+			y = (int) locationRound(e.getY());
 			if (mouseIn(x, y)) {
 
 				p3 = new Pointer(x, y, toolFlag, comFlag);
@@ -832,6 +892,7 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 			count = 0;
 		}
 		update(g);
+		first = true;
 
 	}
 
