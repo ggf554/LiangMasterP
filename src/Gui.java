@@ -424,7 +424,7 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 
 		int n = wireInfo.size();
 		onLineCross = false;
-		if (selectedBlock) {
+		if (selectedBlock || selectedDot) {
 			
 		} else if (n != 0) {
 			for (int i = 0; i < n - 2; i++) {
@@ -434,10 +434,9 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 
 					if (pointer1.toolFlag == 4) {// dot
 						if (Math.abs(pointer1.x - x) <= 6 && Math.abs(pointer1.y - y) <= 6) {
+							
 							moveIndex = i;
-							if(selectedDot) {
-								return false;
-							}
+							 
 							return true;
 						}
 					} else if (pointer1.toolFlag == pointer2.toolFlag) {
@@ -488,8 +487,7 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 						if (dis < 3) {
 							
 								moveIndex = i;
-								
-							
+								componentToLine = true;
 								return true;
 							
 						}
@@ -501,6 +499,7 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 
 						if (inComponentPort(pointer1, pointer2, x, y)) {
 							moveIndex = i;
+							
 							return true;
 						}
 					}
@@ -512,6 +511,8 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 		return false;
 
 	}
+	
+	boolean componentToLine = false;
 
 	/**
 	 * 
@@ -558,7 +559,7 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 				} else if (pointer1.toolFlag == 1) {
 
 					wireInfo.remove(moveIndex);
-					wireInfo.remove(moveIndex - 1);
+					wireInfo.remove(moveIndex);
 					System.out.println("The wire has been deleted");
 
 				}
@@ -678,7 +679,7 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 				temIndex = moveIndex;
 			}
 			
-			mouseIn(locationRound(e.getX()),locationRound(e.getY()));
+			
 			if (pp.toolFlag == 4) {
 
 				Pointer po1 = new Pointer(locationRound(e.getX()), locationRound(e.getY()), 1, pp.componentFlag);
@@ -690,9 +691,11 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 				wireInfo.set(temIndex + 1, po3);
 
 				
-				update(g);
 
 			}
+			
+			
+			update(g);
 		}
 
 		if (selectedBlock) {
@@ -809,7 +812,8 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 	}
 
 	int x, y;
-
+	int lineComponentindex = 0;
+	
 	@Override
 	public void mousePressed(MouseEvent e) {
 
@@ -824,7 +828,7 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 
 				p2 = new Pointer(x, y, toolFlag, comFlag);
 				wireInfo.add(p2);
-
+				lineComponentindex = moveIndex;
 			}
 			break;
 		case 3:// rectangel
@@ -871,11 +875,15 @@ public class Gui extends JFrame implements MouseListener, MouseMotionListener, A
 			x = (int) locationRound(e.getX());
 			y = (int) locationRound(e.getY());
 			if (mouseIn(x, y)) {
-
-				p3 = new Pointer(x, y, toolFlag, comFlag);
-				wireInfo.add(p3);
-				wireInfo.add(endFlag);
-
+				System.out.println("diyige: " + lineComponentindex);
+				System.out.println("2: " + moveIndex);
+				if(lineComponentindex  == moveIndex) {
+					wireInfo.remove(wireInfo.size() -1);
+				} else {
+					p3 = new Pointer(x, y, toolFlag, comFlag);
+					wireInfo.add(p3);
+					wireInfo.add(endFlag);
+				}
 				repaint();
 			}
 
